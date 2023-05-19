@@ -1,6 +1,6 @@
 # API
 import requests
 
-url_api = 'http://numbersapi.com/43'
-response = requests.get(url_api)
-print(response.text if response.status_code == 200 else response.status_code)
+path_api = 'https://api.telegram.org/bot5971044342:AAGvKEGRBjv8aBpUypGBFbckjXN25oYWQhU/getMe'
+res = requests.get(path_api)
+print(res.text if res.status_code == 200 else f'ERROR, your status_code now: {res.status_code}')
