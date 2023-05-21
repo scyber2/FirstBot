@@ -1,33 +1,32 @@
-# API
-# Automation updates
-import requests
-import time
+# Эхо бот (сообщения которые ты отпаравляешь в бота, приходят тебе от него)
+from aiogram import Bot, Dispatcher
+from aiogram.filters import Command
+from aiogram.types import Message
 
-api_url: str = 'https://api.telegram.org/bot'
-token_bot: str = '5971044342:AAGvKEGRBjv8aBpUypGBFbckjXN25oYWQhU'
-photo: str = 'https://api.thecatapi.com/v1/images/search'
-error_text: str = 'Здесь должна была быть картинка с котиком :('
-max_counter: int = 20
+with open('ideas_for_bot.txt') as file:
+    bot_token: str = ''.join(list(file.readline())[-47:]).strip()
 
-offset: int = -2
-counter: int = 0
-chat_id: int
+bot: Bot = Bot(token=bot_token)
+dispat: Dispatcher = Dispatcher()
 
-while counter < max_counter:
-    print(f'attempt = {counter}')
-    updates = requests.get(f'{api_url}{token_bot}/getUpdates?offset={offset + 1}').json()
-    print(updates)
+# Этот хендлер будет срабатывать на команду /start
+@dispat.message(Command(commands=['start']))
+async def process_start(message: Message):
+    await message.answer('Привет!\nМеня зовут Эхо-бот.\nЧто я делаю, можешь посмотреть, нажав на команду /help')
 
-    if updates['result']:
-        for result in updates['result']:
-            offset = result['update_id']
-            chat_id = result['message']['from']['id']
-            cat_response = requests.get(photo)
-            if cat_response.status_code == 200:
-                cat_link = cat_response.json()[0]['url']
-                requests.get(f'{api_url}{token_bot}/sendPhoto?chat_id={chat_id}&photo={cat_link}')
-            else:
-                requests.get(f'{api_url}{token_bot}/sendMessage&chat_id={chat_id}&text={error_text}')
 
-    time.sleep(1)
-    counter += 1
+# Этот хэндлер будет срабатывать на команду "/help"
+@dispat.message(Command(commands=['help']))
+async def process_help(message: Message):
+    await message.answer('Инструкция: то, что ты мне отправишь, я отправлю тебе)))')
+
+
+# Этот хэндлер будет срабатывать на любые ваши текстовые сообщения,
+# кроме команд "/start" и "/help"
+@dispat.message()
+async def send_message(message: Message):
+    await message.reply(text=message.text)
+
+
+if __name__ == '__main__':
+    dispat.run_polling(bot)
