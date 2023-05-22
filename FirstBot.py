@@ -1,5 +1,5 @@
 # Эхо бот (сообщения которые ты отпаравляешь в бота, приходят тебе от него)
-from aiogram import Bot, Dispatcher, F
+from aiogram import Bot, Dispatcher
 from aiogram.filters import Command
 from aiogram.types import Message
 
@@ -22,28 +22,17 @@ async def process_help(message: Message):
     await message.answer('Инструкция: то, что ты мне отправишь, я отправлю тебе)))')
 
 
-# Этот хендлер будет срабатывать на отправку боту фото
-async def send_photo(message: Message):
-    print(message.photo)
-    await message.reply_photo(message.photo[0].file_id)
-
-
-# Этот хендлер будет срабатывать на отправку боту аудио
-async def send_audio(message: Message):
-    await message.reply_voice(message.voice.file_id)
-
-
-# Этот хэндлер будет срабатывать на любые ваши текстовые сообщения,
-# кроме команд "/start" и "/help"
-async def send_text(message: Message):
-    await message.reply(text=message.text)
-
+# Этот хендлер будет срабатывать на отправку все твои сообщения
+async def send_any_message(message: Message):
+    print(f'{message.chat}\n')
+    try:
+        await message.send_copy(message.chat.id)
+    except TypeError:
+        await message.reply(text='Данный тип апдейтов не поддерживается методом send_copy')
 
 dp.message.register(process_start, Command(commands=['start']))
 dp.message.register(process_help, Command(commands=['help']))
-dp.message.register(send_photo, F.photo)
-dp.message.register(send_audio, F.voice)
-dp.message.register(send_text)
+dp.message.register(send_any_message, dp.message)
 
 if __name__ == '__main__':
     dp.run_polling(bot)
